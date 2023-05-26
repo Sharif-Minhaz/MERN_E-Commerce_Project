@@ -2,7 +2,9 @@ const express = require("express");
 const createError = require("http-errors");
 const app = express();
 const { errorMiddleware } = require("./middlewares/errorMiddleware");
+
 require("./middlewares/middlewares")(app);
+require("./routes/routes")(app);
 
 app.get("/test", (req, res) => {
 	res.status(200).send({ status: "All Good", message: "Server is running." });

@@ -14,7 +14,7 @@ const userSchema = new Schema(
 		email: {
 			type: String,
 			unique: true,
-			required: true,
+			required: [true, "Email already in use"],
 			lowercase: true,
 			validate: {
 				validator: (value) => {
@@ -27,9 +27,9 @@ const userSchema = new Schema(
 		password: {
 			type: String,
 			required: [true, "User password is required"],
-			maxLength: [20, "Length of username is can be max 20 chars"],
-			minLength: [6, "Length of username is can be min 6 chars"],
+			minLength: [6, "Length of password is can be min 6 chars"],
 			set: (value) => bcrypt.hashSync(value, bcrypt.genSaltSync(10)),
+			select: false,
 		},
 
 		image: {
