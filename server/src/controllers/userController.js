@@ -1,5 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const { deleteImage } = require("../helper/deleteImage");
+const { createJsonWebToken, verifyJsonWebToken } = require("../helper/jsonwebtoken");
+const emailWithNodemailer = require("../helper/email");
 
 exports.getAllUsersController = asyncHandler(async (req, res) => {
 	const { search = "" } = req.query;
@@ -78,5 +81,116 @@ exports.addUserController = asyncHandler(async (req, res) => {
 		success: false,
 		message: "User not added",
 		user: {},
+	});
+});
+
+exports.deleteUserController = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	const user = await User.exists({ _id: id });
+	if (!user) {
+		return res.status(404).json({
+			success: false,
+			message: "User not found",
+		});
+	}
+
+	const deletedUser = await User.findByIdAndDelete({ _id: id, isAdmin: false });
+
+	const userImagePath = deletedUser.image;
+
+	deleteImage(userImagePath);
+
+	if (deletedUser) {
+		return res.status(200).json({
+			success: true,
+			message: "User deleted",
+			user: deletedUser,
+		});
+	}
+
+	res.status(404).json({
+		success: false,
+		message: "User not found",
+		user: {},
+	});
+});
+
+exports.registerUserController = asyncHandler(async (req, res) => {
+	const { name, email, password, phone, address } = req.body;
+
+	const usersExists = await User.exists({ email });
+
+	if (usersExists) {
+		return res.status(409).json({
+			success: false,
+			message: "User already exits",
+		});
+	}
+
+	const token = createJsonWebToken(
+		{ name, email, password, phone, address },
+		process.env.JWT_ACTIVATION_SECRET,
+		"6m"
+	);
+
+	// prepare email
+	const emailData = {
+		email,
+		subject: "Account activation mail",
+		html: `
+			<h2>Hello ${name},</h2>
+			<p>Please click here to <a target="_blank" href='${process.env.CLIENT_URL}/user/activate?token=${token}'>active your account</a> </p>
+		`,
+	};
+
+	// send mail
+	const emailRes = "await emailWithNodemailer(emailData)";
+
+	if (emailRes) {
+		return res.status(201).json({
+			success: true,
+			message: `Please go to your ${email} to active your account.`,
+			token,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "Failed to send mail",
+	});
+});
+
+exports.activateUserAccount = asyncHandler(async (req, res) => {
+	const { token } = req.body;
+
+	if (!token) throw new Error("Invalid or empty token", token);
+
+	const decoded = verifyJsonWebToken(token, process.env.JWT_ACTIVATION_SECRET);
+
+	if (!decoded) throw new Error("User verification failed!");
+
+	const usersExists = await User.exists({ email: decoded.email });
+
+	if (usersExists) {
+		return res.status(409).json({
+			success: false,
+			message: "User already exits",
+		});
+	}
+
+	const newUser = await new User({ ...decoded }).save();
+
+	if (newUser) {
+		return res.status(201).json({
+			success: true,
+			message: `User added`,
+			user: newUser,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "User not added",
 	});
 });

@@ -13,15 +13,15 @@ const userSchema = new Schema(
 
 		email: {
 			type: String,
+			required: [true, "Email required"],
 			unique: true,
-			required: [true, "Email already in use"],
 			lowercase: true,
 			validate: {
 				validator: (value) => {
 					return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(value);
 				},
+				message: "Please enter a valid email",
 			},
-			message: "Please enter a valid email",
 		},
 
 		password: {

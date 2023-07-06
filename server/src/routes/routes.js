@@ -2,13 +2,13 @@ const userRoute = require("./userRoute");
 
 const routes = [
 	{
-		path: "/api/users",
+		path: "/user",
 		handler: userRoute,
 	},
 ];
 
 module.exports = (app) => {
 	routes.forEach((route) => {
-		app.use(route.path, route.handler);
+		app.use("/api" + route.path, route.handler);
 	});
 };
