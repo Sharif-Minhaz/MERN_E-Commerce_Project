@@ -16,6 +16,7 @@ const userSchema = new Schema(
 			required: [true, "Email required"],
 			unique: true,
 			lowercase: true,
+			immutable: true,
 			validate: {
 				validator: (value) => {
 					return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(value);
@@ -34,8 +35,7 @@ const userSchema = new Schema(
 
 		image: {
 			type: String,
-			default:
-				"https://res.cloudinary.com/hostingimagesservice/image/upload/v1664446734/studentManagement/empty-user.png",
+			default: "default.png",
 		},
 
 		address: {

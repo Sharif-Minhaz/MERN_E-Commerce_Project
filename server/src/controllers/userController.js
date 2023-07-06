@@ -119,6 +119,8 @@ exports.deleteUserController = asyncHandler(async (req, res) => {
 exports.registerUserController = asyncHandler(async (req, res) => {
 	const { name, email, password, phone, address } = req.body;
 
+	const image = req.file?.filename || "default.png";
+
 	const usersExists = await User.exists({ email });
 
 	if (usersExists) {
@@ -129,9 +131,9 @@ exports.registerUserController = asyncHandler(async (req, res) => {
 	}
 
 	const token = createJsonWebToken(
-		{ name, email, password, phone, address },
+		{ name, email, password, phone, address, image },
 		process.env.JWT_ACTIVATION_SECRET,
-		"6m"
+		"10m"
 	);
 
 	// prepare email
@@ -145,7 +147,7 @@ exports.registerUserController = asyncHandler(async (req, res) => {
 	};
 
 	// send mail
-	const emailRes = "await emailWithNodemailer(emailData)";
+	const emailRes = await emailWithNodemailer(emailData);
 
 	if (emailRes) {
 		return res.status(201).json({
@@ -192,5 +194,46 @@ exports.activateUserAccount = asyncHandler(async (req, res) => {
 	res.status(500).json({
 		success: false,
 		message: "User not added",
+	});
+});
+
+exports.updateUserController = asyncHandler(async (req, res) => {
+	const userId = req.params.id;
+
+	const user = await User.findOne({ _id: userId, isAdmin: false });
+
+	if (!user) return res.status(404).json({ success: false, message: "User not found to update" });
+
+	const updatedPayload = {
+		...req.body,
+	};
+
+	if (req.file) {
+		updatedPayload.image = req.file?.filename;
+		deleteImage(`public/images/users/${user.image}`);
+	} else {
+		updatedPayload.image = user.image || "default.png";
+	}
+
+	const updatedUser = await User.findOneAndUpdate(
+		{ _id: userId, isAdmin: false },
+		updatedPayload,
+		{
+			new: true,
+			runValidators: true,
+		}
+	);
+
+	if (updatedUser) {
+		return res.status(200).json({
+			success: true,
+			message: "User is updated successfully",
+			user: updatedUser,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "Can't updated right now",
 	});
 });

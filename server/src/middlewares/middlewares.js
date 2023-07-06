@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const xssClean = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const limiter = rateLimit({
 	windowMs: 10 * 60 * 1000, // 10 minutes
@@ -14,6 +15,7 @@ const limiter = rateLimit({
 
 const middlewares = [
 	cors(),
+	cookieParser(),
 	morgan("dev"),
 	xssClean(),
 	limiter,
