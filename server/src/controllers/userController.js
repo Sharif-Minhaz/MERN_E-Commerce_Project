@@ -237,3 +237,49 @@ exports.updateUserController = asyncHandler(async (req, res) => {
 		message: "Can't updated right now",
 	});
 });
+
+exports.banUserController = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	const user = await User.findOneAndUpdate(
+		{ _id: id, isAdmin: false },
+		{ isBanned: true },
+		{ new: true }
+	);
+
+	if (user) {
+		return res.status(200).json({
+			success: true,
+			message: "User banned successfully!",
+			user,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "User banned failed!",
+	});
+});
+
+exports.unBanUserController = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	const user = await User.findOneAndUpdate(
+		{ _id: id, isAdmin: false },
+		{ isBanned: false },
+		{ new: true }
+	);
+
+	if (user) {
+		return res.status(200).json({
+			success: true,
+			message: "User un-banned successfully!",
+			user,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "User un-banned failed!",
+	});
+});
