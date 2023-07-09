@@ -6,6 +6,8 @@ exports.isLoggedIn = asyncHandler(async (req, res, next) => {
 
 	if (token) {
 		const decoded = verifyJsonWebToken(token, process.env.JWT_ACCESS_TOKEN_SECRET);
+		console.log("🚀 ~ file: authMiddleware.js:9 ~ exports.isLoggedIn=asyncHandler ~ decoded:", decoded)
+		
 		req.decoded = decoded;
 		if (!decoded) res.status(401).json({ success: false, message: "Token expired" });
 		return next();

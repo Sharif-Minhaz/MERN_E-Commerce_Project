@@ -24,7 +24,7 @@ exports.loginController = asyncHandler(async (req, res) => {
 		});
 
 	const token = createJsonWebToken(
-		{ _id: user.password, email: user.email, name: user.name, isAdmin: user.isAdmin },
+		{ _id: user._id, email: user.email, name: user.name, isAdmin: user.isAdmin },
 		process.env.JWT_ACCESS_TOKEN_SECRET,
 		"15m"
 	);
