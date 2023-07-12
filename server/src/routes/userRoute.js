@@ -11,12 +11,14 @@ const {
 	banUserController,
 	unBanUserController,
 	updatePasswordController,
+	forgetPasswordController,
+	resetPasswordController,
 } = require("../controllers/userController");
 const { isLoggedIn, isLoggedOut, isAdmin } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/upload");
 const { runValidation } = require("../validators");
 const { validateUserReg } = require("../validators/authValidators");
-const { updatePassword } = require("../validators/userValidators");
+const { updatePassword, forgetPassword, resetPassword } = require("../validators/userValidators");
 
 router.get("/", isLoggedIn, isAdmin, getAllUsersController);
 router.post("/", isLoggedIn, addUserController);
@@ -43,6 +45,22 @@ router.patch(
 	runValidation,
 	isLoggedIn,
 	updatePasswordController
+);
+
+router.post(
+	"/forget-password",
+	forgetPassword,
+	runValidation,
+	isLoggedIn,
+	forgetPasswordController
+);
+
+router.patch(
+	"/reset-password/info",
+	resetPassword,
+	runValidation,
+	isLoggedIn,
+	resetPasswordController
 );
 
 module.exports = router;

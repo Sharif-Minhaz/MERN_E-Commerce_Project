@@ -37,8 +37,8 @@ const validateUserLogin = [
 		.withMessage("Email is required")
 		.isEmail()
 		.withMessage("Invalid email address"),
-
 	body("password").trim().notEmpty().withMessage("Password is required"),
 ];
+
 
 module.exports = { validateUserReg, validateUserLogin };

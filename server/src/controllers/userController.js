@@ -335,3 +335,103 @@ exports.updatePasswordController = asyncHandler(async (req, res) => {
 		});
 	}
 });
+
+exports.forgetPasswordController = asyncHandler(async (req, res) => {
+	const { email } = req.body;
+	const { email: loggedInEmail, name } = req.decoded;
+
+	const isExist = await User.exists({ email });
+	if (!isExist)
+		return res.status(404).json({
+			success: false,
+			message: "User not found to reset password",
+		});
+
+	if (loggedInEmail !== email) {
+		return res.status(400).json({
+			message: "Please provide the linked email address",
+			success: false,
+		});
+	}
+
+	const token = createJsonWebToken({ email, name }, process.env.JWT_FORGET_PASSWORD, "15m");
+
+	// prepare email
+	const emailData = {
+		email,
+		subject: "Password resetting mail",
+		html: `
+			<h2>Hello ${name},</h2>
+			<p>Please click here to <a target="_blank" href='${process.env.CLIENT_URL}/user/reset-password?token=${token}'>reset your password</a> </p>
+		`,
+	};
+
+	// send mail
+	const emailRes = await emailWithNodemailer(emailData);
+
+	if (emailRes) {
+		return res.status(201).json({
+			success: true,
+			message: `Please go to your ${email} to reset your password.`,
+			token,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "Failed to send mail, password resetting process failed",
+	});
+});
+
+exports.resetPasswordController = asyncHandler(async (req, res) => {
+	const { token, password } = req.body;
+
+	const user = await User.findOne({ email: req.decoded?.email }).select("+password");
+
+	if (!token) throw new Error("Invalid or empty token", token);
+
+	const decoded = verifyJsonWebToken(token, process.env.JWT_FORGET_PASSWORD);
+
+	if (!decoded) throw new Error("Password verification failed!");
+
+	const isRetakePassword = await bcrypt.compare(password, user.password);
+
+	if (isRetakePassword)
+		return res
+			.status(409)
+			.json({ success: false, message: "Old password can't be new password" });
+
+	const updateUser = await User.findOneAndUpdate(
+		{ email: decoded.email },
+		{ password },
+		{ new: true, runValidators: true, context: "document" }
+	);
+
+	res.clearCookie("access_token");
+
+	// prepare email
+	const emailData = {
+		email: decoded.email,
+		subject: "Password changed",
+		html: `
+			<h2>Hello ${decoded.name},</h2>
+			<p>Your password has been changed. If it's not done by you, please contact the authority immediately.</p>
+		`,
+	};
+
+	// send mail
+	await emailWithNodemailer(emailData);
+
+	if (updateUser) {
+		return res.status(200).json({
+			success: true,
+			message: "Password changed successfully",
+			user: updateUser,
+		});
+	}
+
+	res.status(500).json({
+		success: false,
+		message: "Password not changed",
+	});
+});

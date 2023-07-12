@@ -24,6 +24,32 @@ const updatePassword = [
 		}),
 ];
 
+const forgetPassword = [
+	body("email")
+		.trim()
+		.toLowerCase()
+		.notEmpty()
+		.withMessage("Email is required")
+		.isEmail()
+		.withMessage("Invalid email address"),
+];
+
+const resetPassword = [
+	body("password")
+		.trim()
+		.isLength({ min: 6 })
+		.withMessage("New password should be 6 characters long")
+		.notEmpty()
+		.withMessage("New password is required")
+		.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?:=&-])[A-Za-z\d@$!%*#?:=&-]+$/)
+		.withMessage(
+			"New Password should minimum 8 characters, at least 1 Uppercase, 1 Lowercase, 1 number and 1 special character"
+		),
+	body("token").notEmpty().withMessage("Token is required"),
+];
+
 module.exports = {
 	updatePassword,
+	forgetPassword,
+	resetPassword,
 };
