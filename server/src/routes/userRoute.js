@@ -21,9 +21,9 @@ const { validateUserReg } = require("../validators/authValidators");
 const { updatePassword, forgetPassword, resetPassword } = require("../validators/userValidators");
 
 router.get("/", isLoggedIn, isAdmin, getAllUsersController);
-router.post("/", isLoggedIn, addUserController);
-router.get("/:id", isLoggedIn, getSingleUserController);
-router.delete("/:id", isLoggedIn, isAdmin, deleteUserController);
+router.post("/:id([0-9a-fA-F]{24})", isLoggedIn, addUserController);
+router.get("/:id([0-9a-fA-F]{24})", isLoggedIn, getSingleUserController);
+router.delete("/:id([0-9a-fA-F]{24})", isLoggedIn, isAdmin, deleteUserController);
 
 router.post(
 	"/register",
@@ -35,10 +35,10 @@ router.post(
 );
 router.post("/activate", isLoggedOut, activateUserAccount);
 
-router.patch("/:id", isLoggedIn, upload.single("image"), updateUserController);
+router.patch("/:id([0-9a-fA-F]{24})", isLoggedIn, upload.single("image"), updateUserController);
 
-router.patch("/ban-user/:id", isLoggedIn, isAdmin, banUserController);
-router.patch("/unban-user/:id", isLoggedIn, isAdmin, unBanUserController);
+router.patch("/:id([0-9a-fA-F]{24})", isLoggedIn, isAdmin, banUserController);
+router.patch("/unban-user/:id([0-9a-fA-F]{24})", isLoggedIn, isAdmin, unBanUserController);
 router.patch(
 	"/update-password/info",
 	updatePassword,

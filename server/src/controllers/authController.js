@@ -38,7 +38,7 @@ exports.loginController = asyncHandler(async (req, res) => {
 	});
 
 	const refreshToken = createJsonWebToken(
-		{ _id: user._id, email: user.email, name: user.name, isAdmin: user.isAdmin },
+		{ _id: user._id, email: user.email },
 		process.env.JWT_REFRESH_TOKEN_SECRET,
 		"7d"
 	);
@@ -61,6 +61,7 @@ exports.loginController = asyncHandler(async (req, res) => {
 
 exports.logoutController = asyncHandler(async (req, res) => {
 	res.clearCookie("access_token");
+	res.clearCookie("refresh_token");
 
 	res.status(200).json({
 		success: true,
@@ -79,11 +80,11 @@ exports.handleRefreshTokenController = asyncHandler(async (req, res) => {
 	const accessToken = createJsonWebToken(
 		{ _id, email, name, isAdmin },
 		process.env.JWT_ACCESS_TOKEN_SECRET,
-		"15m"
+		"5m"
 	);
 
 	res.cookie("access_token", accessToken, {
-		maxAge: 15 * 60 * 1000,
+		maxAge: 5 * 60 * 1000,
 		httpOnly: true,
 		secure: true,
 		sameSite: "none",
