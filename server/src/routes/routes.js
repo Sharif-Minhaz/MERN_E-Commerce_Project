@@ -1,5 +1,6 @@
 const userRoute = require("./userRoute");
-const authRoute = require("./authRoute")
+const authRoute = require("./authRoute");
+const categoryRoute = require("./categoryRoute");
 
 const routes = [
 	{
@@ -10,6 +11,10 @@ const routes = [
 		path: "/auth",
 		handler: authRoute,
 	},
+	{
+		path: "/categories",
+		handler: categoryRoute,
+	}
 ];
 
 module.exports = (app) => {
