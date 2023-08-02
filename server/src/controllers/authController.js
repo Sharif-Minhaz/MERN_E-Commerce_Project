@@ -80,11 +80,11 @@ exports.handleRefreshTokenController = asyncHandler(async (req, res) => {
 	const accessToken = createJsonWebToken(
 		{ _id, email, name, isAdmin },
 		process.env.JWT_ACCESS_TOKEN_SECRET,
-		"5m"
+		"15m"
 	);
 
 	res.cookie("access_token", accessToken, {
-		maxAge: 5 * 60 * 1000,
+		maxAge: 15 * 60 * 1000,
 		httpOnly: true,
 		secure: true,
 		sameSite: "none",

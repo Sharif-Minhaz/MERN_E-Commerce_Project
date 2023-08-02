@@ -39,7 +39,7 @@ exports.getCategoriesController = asyncHandler(async (req, res) => {
 
 exports.getSingleCategoryController = asyncHandler(async (req, res) => {
 	const { slug } = req.params;
-	const categories = await Category.find({ slug }).lean();
+	const categories = await Category.findOne({ slug }).lean();
 
 	if (categories.length) {
 		return res.status(200).json({
