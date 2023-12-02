@@ -1,12 +1,13 @@
 const asyncHandler = require("express-async-handler");
 const { verifyJsonWebToken } = require("../helper/jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 exports.isLoggedIn = asyncHandler(async (req, res, next) => {
 	const token = req.cookies.access_token;
 
 	if (token) {
 		const decoded = verifyJsonWebToken(token, process.env.JWT_ACCESS_TOKEN_SECRET);
-		
+
 		req.decoded = decoded;
 		if (!decoded) res.status(401).json({ success: false, message: "Token expired" });
 		return next();
@@ -22,7 +23,10 @@ exports.isLoggedOut = asyncHandler(async (req, res, next) => {
 	const token = req.cookies.access_token;
 
 	if (token) {
-		return res.status(409).json({ success: false, message: "User already logged in" });
+		const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET);
+		if (decoded) {
+			return res.status(409).json({ success: false, message: "User already logged in" });
+		}
 	}
 
 	next();
